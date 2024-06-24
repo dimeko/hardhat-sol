@@ -19,3 +19,4 @@ Terminal 3
 cd client
 python3 -m http.server
 ```
+Do not forget to copy the ABI and the contract address to your UI Javascript files. 
