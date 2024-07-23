@@ -28,6 +28,7 @@ contract SupplyChain {
     }
 
     address[] public users_list;
+    Product[] public product_list;
 
     address public admin;
     uint public productCount;
@@ -36,6 +37,7 @@ contract SupplyChain {
     mapping(uint => Product) public products;
     mapping(uint => Shipment) public shipments;
     mapping(address => User) public users;
+    mapping(address => bool) private userExists;
 
     mapping(string => EntityType) public entityTypes;
     mapping(string => Role) public roles;
@@ -72,6 +74,7 @@ contract SupplyChain {
         User memory adminUser = User(EntityType.None, Role.Administrator);
         users[admin] = adminUser;
         users_list.push(admin);
+        userExists[admin] = true;
         productCount = 0;
         shipmentCount = 0;
 
@@ -86,13 +89,24 @@ contract SupplyChain {
     // Function to add a user
     function addUser(address user, uint entityType, uint role) public onlyAdmin {
         User memory newUser = User(EntityType(entityType), Role(role));
+        if(userExists[user] == true) {
+            revert("User already exists");
+        }
+        if( (newUser.role == Role.Supplier && (newUser.entityType != EntityType.Supplier && newUser.entityType != EntityType.Transfer)) ||
+            (newUser.role == Role.LogisticEmployee && (newUser.entityType != EntityType.LogisticEmployee && newUser.entityType != EntityType.Distributor)) ||
+            (newUser.role == Role.Controller && newUser.entityType != EntityType.Storage)) 
+        {
+            revert("Cannot create user with such combination of entity type and role. ");
+        }
         users[user] = newUser;
         users_list.push(user);
+        userExists[user] = true;
     }
 
     // Function to remove a user
     function removeUser(address user) public onlyAdmin {
         delete users[user];
+        userExists[user] = false;
         uint length = users_list.length;
         for (uint i = 0; i < length; i++) {
             if (keccak256(abi.encodePacked(users_list[i])) == keccak256(abi.encodePacked(user))) {
@@ -157,19 +171,28 @@ contract SupplyChain {
         return "";
     }
 
-
-    // Function to add a product
     function addProduct(string memory name, uint quantity) public onlySupplier {
         productCount++;
-        products[productCount] = Product(productCount, name, quantity, msg.sender);
+        Product memory newProduct = Product(productCount, name, quantity, msg.sender);
+        products[productCount] = newProduct;
+        product_list.push(newProduct);
     }
 
-    // Function to remove a product
     function removeProduct(uint productId) public onlyAdmin {
         delete products[productId];
+        for (uint i = 0; i < productCount; i++) {
+            if (product_list[i].id == productId) {
+                product_list[i] = product_list[productCount - 1];
+                product_list.pop();
+                return;
+            }
+        }
     }
 
-    // Function to add a shipment
+    function getProducts() public view returns (Product[] memory) {
+        return product_list;
+    }
+
     function addShipment(uint productId, address destination, uint expectedArrivalDate, string memory status) public {
         // uint tmp = users[msg.sender].entityType;
         if(uint(users[destination].entityType) == uint(users[msg.sender].entityType) + 1
