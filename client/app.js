@@ -1,627 +1,5 @@
 const { createApp, ref } = Vue
-
-// Contract address and ABI (replace with your own)
-const contractABI = [
-  {
-    "inputs": [],
-    "stateMutability": "nonpayable",
-    "type": "constructor"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "string",
-        "name": "name",
-        "type": "string"
-      },
-      {
-        "internalType": "uint256",
-        "name": "quantity",
-        "type": "uint256"
-      }
-    ],
-    "name": "addProduct",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "productId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "destination",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "expectedArrivalDate",
-        "type": "uint256"
-      },
-      {
-        "internalType": "string",
-        "name": "status",
-        "type": "string"
-      }
-    ],
-    "name": "addShipment",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "user",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "entityType",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "role",
-        "type": "uint256"
-      }
-    ],
-    "name": "addUser",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "admin",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "name": "entityTypes",
-    "outputs": [
-      {
-        "internalType": "enum SupplyChain.EntityType",
-        "name": "",
-        "type": "uint8"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getEntities",
-    "outputs": [
-      {
-        "internalType": "string[]",
-        "name": "",
-        "type": "string[]"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "",
-        "type": "uint256[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "productId",
-        "type": "uint256"
-      }
-    ],
-    "name": "getProduct",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "id",
-            "type": "uint256"
-          },
-          {
-            "internalType": "string",
-            "name": "name",
-            "type": "string"
-          },
-          {
-            "internalType": "uint256",
-            "name": "quantity",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address",
-            "name": "currentOwner",
-            "type": "address"
-          }
-        ],
-        "internalType": "struct SupplyChain.Product",
-        "name": "",
-        "type": "tuple"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getProducts",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "id",
-            "type": "uint256"
-          },
-          {
-            "internalType": "string",
-            "name": "name",
-            "type": "string"
-          },
-          {
-            "internalType": "uint256",
-            "name": "quantity",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address",
-            "name": "currentOwner",
-            "type": "address"
-          }
-        ],
-        "internalType": "struct SupplyChain.Product[]",
-        "name": "",
-        "type": "tuple[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getRoles",
-    "outputs": [
-      {
-        "internalType": "string[]",
-        "name": "",
-        "type": "string[]"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "",
-        "type": "uint256[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "transferId",
-        "type": "uint256"
-      }
-    ],
-    "name": "getShipment",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "transferId",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "productId",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address",
-            "name": "origin",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "destination",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "dateOfDeparture",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "expectedArrivalDate",
-            "type": "uint256"
-          },
-          {
-            "internalType": "string",
-            "name": "status",
-            "type": "string"
-          }
-        ],
-        "internalType": "struct SupplyChain.Shipment",
-        "name": "",
-        "type": "tuple"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "user",
-        "type": "address"
-      }
-    ],
-    "name": "getUser",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getUsers",
-    "outputs": [
-      {
-        "internalType": "address[]",
-        "name": "",
-        "type": "address[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "productCount",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "product_list",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "id",
-        "type": "uint256"
-      },
-      {
-        "internalType": "string",
-        "name": "name",
-        "type": "string"
-      },
-      {
-        "internalType": "uint256",
-        "name": "quantity",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "currentOwner",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "products",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "id",
-        "type": "uint256"
-      },
-      {
-        "internalType": "string",
-        "name": "name",
-        "type": "string"
-      },
-      {
-        "internalType": "uint256",
-        "name": "quantity",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "currentOwner",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "productId",
-        "type": "uint256"
-      }
-    ],
-    "name": "removeProduct",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "user",
-        "type": "address"
-      }
-    ],
-    "name": "removeUser",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "name": "roles",
-    "outputs": [
-      {
-        "internalType": "enum SupplyChain.Role",
-        "name": "",
-        "type": "uint8"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "shipmentCount",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "shipments",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "transferId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "productId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "origin",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "destination",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "dateOfDeparture",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "expectedArrivalDate",
-        "type": "uint256"
-      },
-      {
-        "internalType": "string",
-        "name": "status",
-        "type": "string"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "productId",
-        "type": "uint256"
-      }
-    ],
-    "name": "trackProduct",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "transferId",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "productId",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address",
-            "name": "origin",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "destination",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "dateOfDeparture",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "expectedArrivalDate",
-            "type": "uint256"
-          },
-          {
-            "internalType": "string",
-            "name": "status",
-            "type": "string"
-          }
-        ],
-        "internalType": "struct SupplyChain.Shipment[]",
-        "name": "",
-        "type": "tuple[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "transferId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "string",
-        "name": "status",
-        "type": "string"
-      }
-    ],
-    "name": "updateShipment",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "users",
-    "outputs": [
-      {
-        "internalType": "enum SupplyChain.EntityType",
-        "name": "entityType",
-        "type": "uint8"
-      },
-      {
-        "internalType": "enum SupplyChain.Role",
-        "name": "role",
-        "type": "uint8"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "users_list",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  }
-]
-
-// Replace this with the address that the contract deployment gave you! Do not forget! 
-const contractAddress = '0x5FbDB2315678afecb367f032d93F642f64180aa3';
+import { contractABI, contractAddress } from "./config.mjs";
 
 const PharmaSupplyChain = {
     template: `
@@ -634,23 +12,27 @@ const PharmaSupplyChain = {
     
       <div class="main-container"> 
           <div class="sub-container"> 
-
               <div class="section">
-                <h2>Select user to impersonate</h2>
+                <div style="display: flex;">
+                  <h2>Select user to impersonate</h2>
+                </div>
                 <div class="form-group">
-                    <label for="currentAccount">Accounts list:</label>
-                    <select v-model="currentAccount" id="currentAccount" @change="getCurrentUserDetails($event)" class="form-control">
+                    <label for="currentAccount.address">Accounts list:</label>
+                    <select v-model="currentAccount.address" id="currentAccount.address" @change="getCurrentUserDetails($event)" class="form-control">
                         <option v-for="(value, key) in accounts" :value="value">{{ value }}</option>
                     </select>
                 </div>
                 <div class="current-user-details">
-                    <p>Current user: {{currentAccount}}</p>
-                    <p>Role: {{roles[currentAccountRole]}}</p>
-                    <p>Entity type: {{entityTypes[currentAccountEntityType]}}</p>
+                    <p>Current user: {{currentAccount.address}}</p>
+                    <p>Role: {{roles[currentAccount.role]}}</p>
+                    <p>Entity type: {{entityTypes[currentAccount.entityType]}}</p>
                 </div>
               </div>
               <div class="section">
-                  <h2>Add User</h2>
+                  <div style="display: flex;">
+                    <h2>Add User</h2>
+                    <button @click="addUser(newUser, newUserEntityType, newUserRole)" class="btn">Add User</button>
+                  </div>
                   <div class="form-group">
                       <label for="newUser">User Address:</label>
                       <select v-model="newUser" id="newUser" class="form-control">
@@ -669,7 +51,6 @@ const PharmaSupplyChain = {
                           <option v-for="(value, key) in roles" :value="key">{{ value }}</option>
                       </select>
                   </div>
-                  <button @click="addUser(newUser, newUserEntityType, newUserRole)" class="btn">Add User</button>
               </div>
 
               <div class="section">
@@ -685,7 +66,10 @@ const PharmaSupplyChain = {
           </div>
           <div class="sub-container"> 
                   <div class="section">
-                      <h2>Add Product</h2>
+                      <div style="display: flex;"> 
+                        <h2>Add Product</h2>
+                        <button @click="addProduct" class="btn">Add Product</button>
+                      </div>
                       <div class="form-group">
                           <label for="productName">Product Name:</label>
                           <input v-model="productName" id="productName" class="form-control">
@@ -694,23 +78,27 @@ const PharmaSupplyChain = {
                           <label for="productQuantity">Quantity:</label>
                           <input v-model="productQuantity" id="productQuantity" type="number" class="form-control">
                       </div>
-                      <button @click="addProduct" class="btn">Add Product</button>
                   </div>
 
                   <div class="section">
-                  <h2>Products</h2>
+                    <div style="display: flex;"> 
+                      <h2>Products</h2>
+                      <button @click="listProducts" class="btn">List Products</button>
+                   </div>
                   <ul class="products-list">
                       <li v-for="product in products">
                           <p>Id: {{ product['id'] }}<br/> Name: {{ product['account'] }} <br/>Quantity: {{product['quantity']}} <br/>Owner: {{product['currentOwner']}}</p>
                       </li>
                   </ul>
-                  <button @click="listProducts" class="btn">List Products</button>
               </div>
                  
           </div>
           <div class="sub-container"> 
                    <div class="section">
+                   <div style="display: flex;"> 
                       <h2>Add Shipment</h2>
+                      <button @click="addShipment" class="btn">Add Shipment</button>
+                   </div>
                       <div class="form-group">
                           <label for="shipmentProductId">Product ID:</label>
                           <input v-model="shipmentProductId" id="shipmentProductId" type="number" class="form-control">
@@ -727,27 +115,26 @@ const PharmaSupplyChain = {
                           <label for="shipmentStatus">Status:</label>
                           <input v-model="shipmentStatus" id="shipmentStatus" class="form-control">
                       </div>
-                      <button @click="addShipment" class="btn">Add Shipment</button>
                   </div>
         
                   <div class="section">
-                      <h2>Track Product</h2>
+                      <div style="display: flex;"> 
+                        <h2>Track Product</h2>
+                        <button @click="trackProduct" class="btn">Track Product</button>
+                      </div>
                       <div class="form-group">
                           <label for="trackProductId">Product ID:</label>
                           <input v-model="trackProductId" id="trackProductId" type="number" class="form-control">
                       </div>
-                      <button @click="trackProduct" class="btn">Track Product</button>
                   </div>
                   <div class="section">
                       <h2>Shipment History</h2>
                       <ul class="shipment-history">
                           <li v-for="shipment in shipmentHistory">
-                              <p>from {{shipment['origin']}} -> to {{shipment['ordestinationigin']}}, departure on: {{shipment['dateOfDeparture']}}, expected on: {{shipment['expectedArrivalDate']}}, , status: {{shipment['status']}}   </p>
+                              <p><strong>from:</strong> {{shipment['origin']}}<br/><strong>to:</strong> {{shipment['destination']}}<br/><strong>departure on:</strong> {{timestampToDate(shipment['dateOfDeparture'])}}<br/><strong>expected on:</strong> {{timestampToDate(shipment['expectedArrivalDate'])}}<br/><strong>status:</strong> {{shipment['status']}}   </p>
                           </li>
                       </ul>
                   </div>
-
-                
             </div>
         </div>
     </div>
@@ -784,15 +171,40 @@ const PharmaSupplyChain = {
             shipmentStatus: '',
             trackProductId: 0,
             shipmentHistory: [],
-            currentAccount: "",
-            currentAccountRole: "",
-            currentAccountEntityType: "",
+            currentAccount: {
+              address: "",
+              role: "",
+              entityType: ""
+            },
             showToast: false,
             toastMessage: '',
             toastType: ''
         }
     },
     methods: {
+          timestampToDate(timestamp) {
+            const date = new Date(Number(timestamp) * 1000);
+            const formattedDateTime = date.toLocaleString('en-US', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false // Set to true for 12-hour format, false for 24-hour format
+            });
+        
+            return formattedDateTime;
+        },
+        currentDate() {
+          const date = new Date();
+
+          let day = date.getDate();
+          let month = date.getMonth() + 1;
+          let year = date.getFullYear();
+
+          return `${year}-${month}-${day}`;
+        },
         showToastMessage(message, type) {
             this.toastMessage = message;
             this.toastType = type;
@@ -810,17 +222,17 @@ const PharmaSupplyChain = {
         },
         async getCurrentUserDetails(select_item) {
             const containsTargetValue = this.users.some(o => o.account === select_item.target.value);
-            this.currentAccount = select_item.target.value
+            this.currentAccount.address = select_item.target.value
             if(!containsTargetValue) {
-                this.currentAccountEntityType = ""
-                this.currentAccountRole = ""
+                this.currentAccount.entityType = ""
+                this.currentAccount.role = ""
                 this.showToastMessage("Cannot select this account. Not in local users list, try fetching the user list first", "error")
                 return;
             }
             try {
                 const _r = await this.contract.methods.getUser(select_item.target.value).call();
-                this.currentAccountEntityType = _r[1]
-                this.currentAccountRole = _r[0]
+                this.currentAccount.entityType = _r[1]
+                this.currentAccount.role = _r[0]
             } catch (error) {
                 console.error(error);
             }
@@ -830,8 +242,8 @@ const PharmaSupplyChain = {
               await this.contract.methods.getUsers().call().then((_r) => {
                   this.users = []
                   _r.forEach(async _ac =>{
-                      const _r = await this.contract.methods.getUser(_ac).call();
-                      this.users.push({"account": _ac, "entityType": _r[1],  "role": _r[0]})
+                      const _usr = await this.contract.methods.getUser(_ac).call();
+                      this.users.push({account: _ac, entityType: _usr[1],  role: _usr[0]})
                   });
               });
           } catch (error) {
@@ -844,13 +256,12 @@ const PharmaSupplyChain = {
                   newUser,
                   newUserEntityType,
                   newUserRole).send(
-                    { from: this.currentAccount }
+                    { from: this.currentAccount.address }
                   );
 
                 this.showToastMessage("User added successfully", "success")
                 this.listUsers()
             } catch (error) {
-              console.log(error)
                 this.showToastMessage(error, "error")
             }
         },
@@ -875,8 +286,7 @@ const PharmaSupplyChain = {
         },
         async addProduct() {
             try {
-                console.log("Addidng product with account: ", this.currentAccount)
-                await this.contract.methods.addProduct(this.productName, this.productQuantity).send({ from: this.currentAccount });
+                await this.contract.methods.addProduct(this.productName, this.productQuantity).send({ from: this.currentAccount.address });
                 this.showToastMessage("Product added successfully!", "success")
                 this.listProducts()
             } catch (error) {
@@ -891,7 +301,7 @@ const PharmaSupplyChain = {
                   this.shipmentDestination,
                   expectedArrivalDate,
                   this.shipmentStatus).send(
-                    { from: this.currentAccount }
+                    { from: this.currentAccount.address }
                   );
                 this.showToastMessage("Shipment added successfully!", "success")
             } catch (error) {
@@ -900,7 +310,7 @@ const PharmaSupplyChain = {
         },
         async trackProduct() {
             try {
-                const shipments = await this.contract.methods.trackProduct(this.trackProductId).call({ from: this.currentAccount });
+                const shipments = await this.contract.methods.trackProduct(this.trackProductId).call({ from: this.currentAccount.address });
                 console.log(shipments)
                 this.shipmentHistory = shipments;
             } catch (error) {
@@ -913,10 +323,6 @@ const PharmaSupplyChain = {
             } catch (error) {
                 this.showToastMessage(error, "error")
             }
-        },
-        async initUsers() {
-          
-          this.currentAccount = await this.web3.eth.admin;
         }
     },
     async mounted() {
@@ -924,13 +330,20 @@ const PharmaSupplyChain = {
         await this.loadContract();
         await this.listAccounts();
         await this.listUsers();
+        await this.listProducts();
 
         try {
-            this.currentAccount = await this.web3.eth.admin;
+            for(let i=0; i<this.users.length; i++) {
+              if(BigInt(this.users[i].role) === BigInt(0)){
+                this.currentAccount.address = this.users[i].account
+                this.currentAccount.role = this.users[i].role
+                this.currentAccount.entityType = this.users[i].entityType
+                break;
+              }
+            }
         } catch (error) {
             this.showToastMessage(error, "error")
         }
-        this.initUsers()
     }
 };
 

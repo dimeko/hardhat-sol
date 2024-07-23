@@ -25,10 +25,16 @@ const PharmaSupplyChain = {
             {{ toastMessage }}
 ...
 ```
+As soon as you copy the address to the config file, you can run the init.mjs script to initialize the users on the chain (Node of course is required)
+```
+node init.mjs
+```
 Terminal 3
 ```shell
 # Then run a python server to test your contract dAPP UI
 cd client
 python3 -m http.server
 ```
+Now you can visit the contract UI on the given port of your localhost. You will see the already initialized users.
+
 Do not forget to copy the ABI and the contract address to your UI Javascript files. 
