@@ -63,7 +63,6 @@ const createUsers = async () => {
     }
 }
 
-
 const init = async () => {
     accounts = await web3.eth.getAccounts();
 

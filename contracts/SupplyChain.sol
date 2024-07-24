@@ -19,6 +19,7 @@ contract SupplyChain {
         address destination;
         uint dateOfDeparture;
         uint expectedArrivalDate;
+        uint quantity;
         string status;
     }
 
@@ -28,7 +29,7 @@ contract SupplyChain {
     }
 
     address[] public users_list;
-    Product[] public product_list;
+    uint[] public product_list;
 
     address public admin;
     uint public productCount;
@@ -175,13 +176,13 @@ contract SupplyChain {
         productCount++;
         Product memory newProduct = Product(productCount, name, quantity, msg.sender);
         products[productCount] = newProduct;
-        product_list.push(newProduct);
+        product_list.push(productCount);
     }
 
     function removeProduct(uint productId) public onlyAdmin {
         delete products[productId];
         for (uint i = 0; i < productCount; i++) {
-            if (product_list[i].id == productId) {
+            if (product_list[i] == productId) {
                 product_list[i] = product_list[productCount - 1];
                 product_list.pop();
                 return;
@@ -189,17 +190,31 @@ contract SupplyChain {
         }
     }
 
-    function getProducts() public view returns (Product[] memory) {
+    function getProducts() public view returns (uint[] memory) {
         return product_list;
     }
 
-    function addShipment(uint productId, address destination, uint expectedArrivalDate, string memory status) public {
-        // uint tmp = users[msg.sender].entityType;
+    function addShipment(uint productId, address destination, uint expectedArrivalDate, string memory status, uint quantity, bool firstShipment) public {
         if(uint(users[destination].entityType) == uint(users[msg.sender].entityType) + 1
            || uint(users[destination].entityType) == uint(users[msg.sender].entityType) - 1) {
-            shipmentCount++;
-            shipments[shipmentCount] = Shipment(shipmentCount, productId, msg.sender, destination, block.timestamp, expectedArrivalDate, status);
-            products[productId].currentOwner = destination;
+            if(products[productId].quantity >= quantity) {
+                shipmentCount++;
+                shipments[shipmentCount] = Shipment(
+                    shipmentCount,
+                    productId,
+                    msg.sender,
+                    destination,
+                    block.timestamp,
+                    expectedArrivalDate,
+                    quantity,
+                    status);
+                products[productId].currentOwner = destination;
+                if(firstShipment) {
+                    products[productId].quantity = products[productId].quantity - quantity;
+                }
+            } else {
+                revert("Not available products.");
+            }
         } else {
             revert("You cannot send the shipment on this destination.");
         }
@@ -212,7 +227,6 @@ contract SupplyChain {
 
     // Function to get product details
     function getProduct(uint productId) public view returns (Product memory) {
-        require(users[msg.sender].role == Role.Controller || products[productId].currentOwner == msg.sender, "Not authorized");
         return products[productId];
     }
 

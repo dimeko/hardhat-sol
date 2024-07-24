@@ -87,7 +87,7 @@ const PharmaSupplyChain = {
                    </div>
                   <ul class="products-list">
                       <li v-for="product in products">
-                          <p>Id: {{ product['id'] }}<br/> Name: {{ product['account'] }} <br/>Quantity: {{product['quantity']}} <br/>Owner: {{product['currentOwner']}}</p>
+                          <p>Id: {{ product['id'] }}<br/> Name: {{ product['name'] }} <br/>Quantity: {{product['quantity']}} <br/>Owner: {{product['currentOwner']}}</p>
                       </li>
                   </ul>
               </div>
@@ -100,20 +100,28 @@ const PharmaSupplyChain = {
                       <button @click="addShipment" class="btn">Add Shipment</button>
                    </div>
                       <div class="form-group">
-                          <label for="shipmentProductId">Product ID:</label>
-                          <input v-model="shipmentProductId" id="shipmentProductId" type="number" class="form-control">
+                          <label for="shipment.firstShipment">First chain shipment (means decrease quantity):</label>
+                          <input v-model="shipment.firstShipment" id="shipment.firstShipment" type="checkbox" class="form-control" style="width: auto !important">
                       </div>
                       <div class="form-group">
-                          <label for="shipmentDestination">Destination Address:</label>
-                          <input v-model="shipmentDestination" id="shipmentDestination" class="form-control">
+                          <label for="shipment.productId">Product ID:</label>
+                          <input v-model="shipment.productId" id="shipment.productId" type="number" class="form-control">
                       </div>
                       <div class="form-group">
-                          <label for="shipmentArrivalDate">Expected Arrival Date:</label>
-                          <input v-model="shipmentArrivalDate" id="shipmentArrivalDate" type="date" class="form-control">
+                          <label for="shipment.quantity">Product quantity:</label>
+                          <input v-model="shipment.quantity" id="shipment.quantity" type="number" class="form-control">
                       </div>
                       <div class="form-group">
-                          <label for="shipmentStatus">Status:</label>
-                          <input v-model="shipmentStatus" id="shipmentStatus" class="form-control">
+                          <label for="shipment.destination">Destination Address:</label>
+                          <input v-model="shipment.destination" id="shipment.destination" class="form-control">
+                      </div>
+                      <div class="form-group">
+                          <label for="shipment.arrivalDate">Expected Arrival Date:</label>
+                          <input v-model="shipment.arrivalDate" id="shipment.arrivalDate" type="date" class="form-control">
+                      </div>
+                      <div class="form-group">
+                          <label for="shipment.status">Status:</label>
+                          <input v-model="shipment.status" id="shipment.status" class="form-control">
                       </div>
                   </div>
         
@@ -165,10 +173,14 @@ const PharmaSupplyChain = {
             products: [],
             productName: '',
             productQuantity: 0,
-            shipmentProductId: 0,
-            shipmentDestination: '',
-            shipmentArrivalDate: '',
-            shipmentStatus: '',
+            shipment: {
+              productId: 0,
+              destination: "",
+              arrivalDate: "",
+              status: "",
+              quantity: 0,
+              firstShipment: false
+            },
             trackProductId: 0,
             shipmentHistory: [],
             currentAccount: {
@@ -270,12 +282,13 @@ const PharmaSupplyChain = {
                 await this.contract.methods.getProducts().call().then((_r) => {
                     this.products = []
                     _r.forEach(async _pr =>{
+                      const _prod = await this.contract.methods.getProduct(_pr).call();
                         this.products.push(
                           {
-                            "id": _pr["id"],
-                            "name": _pr["name"],
-                            "quantity": _pr["quantity"],
-                            "currentOwner": _pr["currentOwner"]
+                            "id": _prod["id"],
+                            "name": _prod["name"],
+                            "quantity": _prod["quantity"],
+                            "currentOwner": _prod["currentOwner"]
                           }
                         )
                     });
@@ -295,12 +308,16 @@ const PharmaSupplyChain = {
         },
         async addShipment() {
             try {
-                const expectedArrivalDate = new Date(this.shipmentArrivalDate).getTime() / 1000; // Convert to UNIX timestamp
+                const expectedArrivalDate = new Date(this.shipment.arrivalDate).getTime() / 1000; // Convert to UNIX timestamp
+
                 await this.contract.methods.addShipment(
-                  this.shipmentProductId,
-                  this.shipmentDestination,
+                  this.shipment.productId,
+                  this.shipment.destination,
                   expectedArrivalDate,
-                  this.shipmentStatus).send(
+                  this.shipment.status,
+                  this.shipment.quantity,
+                  this.shipment.firstShipment
+                ).send(
                     { from: this.currentAccount.address }
                   );
                 this.showToastMessage("Shipment added successfully!", "success")
