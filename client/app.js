@@ -57,7 +57,8 @@ const PharmaSupplyChain = {
                   <h2>Users</h2>
                   <ul class="user-list">
                       <li v-for="user in users">
-                          <p>Account: {{ user['account'] }} <br/>Entity type: {{entityTypes[user['entityType']]}} <br/>Role: {{roles[user['role']]}}</p>
+                            <p>Account: {{ user['account'] }} <br/>Entity type: {{entityTypes[user['entityType']]}} <br/>Role: {{roles[user['role']]}}</p>
+                            <button @click="removeUser(user['account'])" style="background-color: red !important" >Remove</button>
                       </li>
                   </ul>
                   <button @click="listUsers" class="btn">List Users</button>
@@ -87,7 +88,8 @@ const PharmaSupplyChain = {
                    </div>
                   <ul class="products-list">
                       <li v-for="product in products">
-                          <p>Id: {{ product['id'] }}<br/> Name: {{ product['name'] }} <br/>Quantity: {{product['quantity']}} <br/>Owner: {{product['currentOwner']}}</p>
+                            <p>Id: {{ product['id'] }}<br/> Name: {{ product['name'] }} <br/>Quantity: {{product['quantity']}} <br/>Owner: {{product['currentOwner']}}</p>
+                            <button @click="removeProduct(product['id'])" style="background-color: red !important" >Remove</button>
                       </li>
                   </ul>
               </div>
@@ -99,10 +101,6 @@ const PharmaSupplyChain = {
                       <h2>Add Shipment</h2>
                       <button @click="addShipment" class="btn">Add Shipment</button>
                    </div>
-                      <div class="form-group">
-                          <label for="shipment.firstShipment">First chain shipment (means decrease quantity):</label>
-                          <input v-model="shipment.firstShipment" id="shipment.firstShipment" type="checkbox" class="form-control" style="width: auto !important">
-                      </div>
                       <div class="form-group">
                           <label for="shipment.productId">Product ID:</label>
                           <input v-model="shipment.productId" id="shipment.productId" type="number" class="form-control">
@@ -124,6 +122,21 @@ const PharmaSupplyChain = {
                           <input v-model="shipment.status" id="shipment.status" class="form-control">
                       </div>
                   </div>
+
+                  <div class="section">
+                    <div style="display: flex;"> 
+                        <h2>Update shipment</h2>
+                        <button @click="updateShipment" class="btn">Update</button>
+                    </div>
+                        <div class="form-group">
+                          <label for="shipmentToUpdate.shipmentId">Shipment ID:</label>
+                          <input v-model="shipmentToUpdate.shipmentId" id="shipmentToUpdate.shipmentId" type="number" class="form-control">
+                      </div>
+                      <div class="form-group">
+                          <label for="shipmentToUpdate.status">New Status:</label>
+                          <input v-model="shipmentToUpdate.status" id="shipmentToUpdate.status" class="form-control">
+                      </div>
+                  </div>
         
                   <div class="section">
                       <div style="display: flex;"> 
@@ -134,88 +147,89 @@ const PharmaSupplyChain = {
                           <label for="trackProductId">Product ID:</label>
                           <input v-model="trackProductId" id="trackProductId" type="number" class="form-control">
                       </div>
-                  </div>
-                  <div class="section">
-                      <h2>Shipment History</h2>
                       <ul class="shipment-history">
                           <li v-for="shipment in shipmentHistory">
-                              <p><strong>from:</strong> {{shipment['origin']}}<br/><strong>to:</strong> {{shipment['destination']}}<br/><strong>departure on:</strong> {{timestampToDate(shipment['dateOfDeparture'])}}<br/><strong>expected on:</strong> {{timestampToDate(shipment['expectedArrivalDate'])}}<br/><strong>status:</strong> {{shipment['status']}}   </p>
+                              <p><strong>Id:</strong> {{shipment['shipmentId']}}<br/><strong>from:</strong> {{shipment['origin']}}<br/><strong>to:</strong> {{shipment['destination']}}<br/><strong>departure on:</strong> {{timestampToDate(shipment['dateOfDeparture'])}}<br/><strong>expected on:</strong> {{timestampToDate(shipment['expectedArrivalDate'])}}<br/><strong>status:</strong> {{shipment['status']}}   </p>
                           </li>
                       </ul>
                   </div>
+    
             </div>
         </div>
     </div>
     `,
     data() {
         return {
-            web3: null,
-            contract: null,
-            newUser: '',
-            newUserEntityType: '',
-            newUserRole: '',
-            entityTypes: {
-                0: 'None',
-                1: 'Supplier',
-                2: 'Transfer',
-                3: 'LogisticEmployee',
-                4: 'Distributor',
-                5: 'Storage'
-            },
-            roles: {
-                0: 'Administrator',
-                1: 'Supplier',
-                2: 'LogisticEmployee',
-                3: 'Controller'
-            },
-            accounts: [],
-            users: [],
-            products: [],
-            productName: '',
-            productQuantity: 0,
-            shipment: {
-              productId: 0,
-              destination: "",
-              arrivalDate: "",
-              status: "",
-              quantity: 0,
-              firstShipment: false
-            },
-            trackProductId: 0,
-            shipmentHistory: [],
-            currentAccount: {
-              address: "",
-              role: "",
-              entityType: ""
-            },
-            showToast: false,
-            toastMessage: '',
-            toastType: ''
+                web3: null,
+                contract: null,
+                newUser: '',
+                newUserEntityType: '',
+                newUserRole: '',
+                entityTypes: {
+                    0: 'None',
+                    1: 'Supplier',
+                    2: 'Transfer',
+                    3: 'LogisticEmployee',
+                    4: 'Distributor',
+                    5: 'Storage'
+                },
+                roles: {
+                    0: 'Administrator',
+                    1: 'Supplier',
+                    2: 'LogisticEmployee',
+                    3: 'Controller'
+                },
+                accounts: [],
+                users: [],
+                products: [],
+                productName: '',
+                productQuantity: 0,
+                shipment: {
+                    productId: 0,
+                    destination: "",
+                    arrivalDate: "",
+                    status: "",
+                    quantity: 0,
+                },
+                shipmentToUpdate: {
+                    shipmentId: 0,
+                    status: ""
+                },
+                trackProductId: 0,
+                shipmentHistory: [],
+                currentAccount: {
+                    address: "",
+                    role: "",
+                    entityType: ""
+                },
+                showToast: false,
+                toastMessage: '',
+                toastType: ''
         }
     },
     methods: {
-          timestampToDate(timestamp) {
-            const date = new Date(Number(timestamp) * 1000);
-            const formattedDateTime = date.toLocaleString('en-US', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-                hour12: false // Set to true for 12-hour format, false for 24-hour format
-            });
-        
-            return formattedDateTime;
+            timestampToDate(timestamp) {
+                const date = new Date(Number(timestamp) * 1000);
+                const formattedDateTime = date.toLocaleString('en-US', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: false // Set to true for 12-hour format, false for 24-hour format
+                });
+            
+                return formattedDateTime;
         },
         currentDate() {
-          const date = new Date();
+            const date = new Date();
 
-          let day = date.getDate();
-          let month = date.getMonth() + 1;
-          let year = date.getFullYear();
+            let day = date.getDate();
+            let month = date.getMonth() + 1;
+            let year = date.getFullYear();
 
-          return `${year}-${month}-${day}`;
+            return `${year}-${month}-${day}`;
         },
         showToastMessage(message, type) {
             this.toastMessage = message;
@@ -224,13 +238,13 @@ const PharmaSupplyChain = {
             
             setTimeout(() => {
               this.showToast = false;
-            }, 7000); // Toast will disappear after 3 seconds
+            }, 7000); 
         },
         async loadWeb3() {
             this.web3 = new Web3('http://localhost:8545');
         },
         async loadContract() {
-          this.contract = new this.web3.eth.Contract(contractABI, contractAddress);
+            this.contract = new this.web3.eth.Contract(contractABI, contractAddress);
         },
         async getCurrentUserDetails(select_item) {
             const containsTargetValue = this.users.some(o => o.account === select_item.target.value);
@@ -250,29 +264,51 @@ const PharmaSupplyChain = {
             }
         },
         async listUsers() {
-          try {
-              await this.contract.methods.getUsers().call().then((_r) => {
-                  this.users = []
-                  _r.forEach(async _ac =>{
-                      const _usr = await this.contract.methods.getUser(_ac).call();
-                      this.users.push({account: _ac, entityType: _usr[1],  role: _usr[0]})
-                  });
-              });
-          } catch (error) {
-              this.showToastMessage(error, "error")
-          }
+            try {
+                await this.contract.methods.getUsers().call().then((_r) => {
+                    this.users = []
+                    _r.forEach(async _ac =>{
+                        const _usr = await this.contract.methods.getUser(_ac).call();
+                        this.users.push({account: _ac, entityType: _usr[1],  role: _usr[0]})
+                    });
+                });
+            } catch (error) {
+                this.showToastMessage(error, "error")
+            }
         },
-        async addUser(newUser, newUserEntityType, newUserRole) {
+        async addUser(newUserAddress, newUserEntityType, newUserRole) {
             try {
                 await this.contract.methods.addUser(
-                  newUser,
-                  newUserEntityType,
-                  newUserRole).send(
-                    { from: this.currentAccount.address }
-                  );
-
-                this.showToastMessage("User added successfully", "success")
-                this.listUsers()
+                    newUserAddress,
+                    newUserEntityType,
+                    newUserRole).send(
+                        { from: this.currentAccount.address }
+                        ).then((event) => {
+                            console.log(event)
+                            this.showToastMessage("User added successfully", "success")
+                        }).catch((error) => {
+                            console.log(error)
+                            this.showToastMessage(error, "error")
+                        }).finally(() => {
+                            this.listUsers()
+                        })
+            } catch (error) {
+                this.showToastMessage(error, "error")
+            }
+        },
+        async removeUser(address) {
+            try {
+                await this.contract.methods.removeUser(address).send(
+                        { from: this.currentAccount.address }
+                    ).then((event) => {
+                        console.log(event)
+                        this.showToastMessage("User removed successfully", "success")
+                    }).catch((error) => {
+                        console.log(error)
+                        this.showToastMessage(error, "error")
+                    }).finally(() => {
+                        this.listUsers()
+                    })
             } catch (error) {
                 this.showToastMessage(error, "error")
             }
@@ -282,7 +318,7 @@ const PharmaSupplyChain = {
                 await this.contract.methods.getProducts().call().then((_r) => {
                     this.products = []
                     _r.forEach(async _pr =>{
-                      const _prod = await this.contract.methods.getProduct(_pr).call();
+                        const _prod = await this.contract.methods.getProduct(_pr).call();
                         this.products.push(
                           {
                             "id": _prod["id"],
@@ -299,37 +335,89 @@ const PharmaSupplyChain = {
         },
         async addProduct() {
             try {
-                await this.contract.methods.addProduct(this.productName, this.productQuantity).send({ from: this.currentAccount.address });
-                this.showToastMessage("Product added successfully!", "success")
-                this.listProducts()
+                await this.contract.methods.addProduct(this.productName, this.productQuantity).
+                    send({ from: this.currentAccount.address })
+                        .then((event) => {
+                            console.log(event)
+                            this.showToastMessage("Product added successfully!", "success")
+                        }).catch((error) => {
+                            console.log(error)
+                            this.showToastMessage(error, "error")
+                        }).finally(() => {
+                            this.listProducts()
+                        })
             } catch (error) {
                 this.showToastMessage(error, "error")
-        }
+            }
+        },
+        async removeProduct(productId) {
+            try {
+                await this.contract.methods.removeProduct(productId).send(
+                        { from: this.currentAccount.address }
+                    ).then((event) => {
+                        console.log(event)
+                        this.showToastMessage("Product removed successfully", "success")
+                    }).catch((error) => {
+                        console.log(error)
+                        this.showToastMessage(error, "error")
+                    }).finally(() => {
+                        this.listProducts()
+                    })
+            } catch (error) {
+                this.showToastMessage(error, "error")
+            }
         },
         async addShipment() {
             try {
                 const expectedArrivalDate = new Date(this.shipment.arrivalDate).getTime() / 1000; // Convert to UNIX timestamp
 
                 await this.contract.methods.addShipment(
-                  this.shipment.productId,
-                  this.shipment.destination,
-                  expectedArrivalDate,
-                  this.shipment.status,
-                  this.shipment.quantity,
-                  this.shipment.firstShipment
+                    this.shipment.productId,
+                    this.shipment.destination,
+                    expectedArrivalDate,
+                    this.shipment.status,
+                    this.shipment.quantity,
                 ).send(
                     { from: this.currentAccount.address }
-                  );
-                this.showToastMessage("Shipment added successfully!", "success")
+                ).then((event) => {
+                    console.log(event)
+                    this.showToastMessage("Shipment added successfully!", "success")
+                }).catch((error) => {
+                    console.log(error)
+                    this.showToastMessage(error, "error")
+                })
+            } catch (error) {
+                this.showToastMessage(error, "error")
+            }
+        },
+        async updateShipment() {
+            try {
+                await this.contract.methods.updateShipment(
+                    this.shipmentToUpdate.shipmentId,
+                    this.shipmentToUpdate.status,
+                ).send(
+                    { from: this.currentAccount.address }
+                ).then((event) => {
+                    console.log(event)
+                    this.showToastMessage("Shipment updated successfully!", "success")
+                }).catch((error) => {
+                    console.log(error)
+                    this.showToastMessage(error, "error")
+                })
             } catch (error) {
                 this.showToastMessage(error, "error")
             }
         },
         async trackProduct() {
             try {
-                const shipments = await this.contract.methods.trackProduct(this.trackProductId).call({ from: this.currentAccount.address });
-                console.log(shipments)
-                this.shipmentHistory = shipments;
+                const shipments = await this.contract.methods.trackProduct(this.trackProductId).call({ from: this.currentAccount.address })
+                    .then((result) => {
+                        this.shipmentHistory = result;
+                    }).catch((error) => {
+                        console.log(error)
+                        this.shipmentHistory = []
+                        this.showToastMessage(error, "error")
+                    })
             } catch (error) {
                 this.showToastMessage(error, "error")
             }
