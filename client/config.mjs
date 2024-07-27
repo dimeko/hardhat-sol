@@ -737,8 +737,9 @@ const contractABI = [
 
 // Replace this with the address that the contract deployment gave you! Do not forget! 
 const contractAddress = '0x5FbDB2315678afecb367f032d93F642f64180aa3';
-
+const host = 'http://localhost:8545'
 export {
     contractABI,
-    contractAddress
+    contractAddress,
+    host
 }

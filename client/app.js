@@ -1,5 +1,5 @@
 const { createApp, ref } = Vue
-import { contractABI, contractAddress } from "./config.mjs";
+import { host, contractABI, contractAddress } from "./config.mjs";
 
 const PharmaSupplyChain = {
     template: `
@@ -208,19 +208,19 @@ const PharmaSupplyChain = {
         }
     },
     methods: {
-            timestampToDate(timestamp) {
-                const date = new Date(Number(timestamp) * 1000);
-                const formattedDateTime = date.toLocaleString('en-US', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit',
-                    hour12: false // Set to true for 12-hour format, false for 24-hour format
-                });
-            
-                return formattedDateTime;
+        timestampToDate(timestamp) {
+            const date = new Date(Number(timestamp) * 1000);
+            const formattedDateTime = date.toLocaleString('en-US', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false // Set to true for 12-hour format, false for 24-hour format
+            });
+        
+            return formattedDateTime;
         },
         currentDate() {
             const date = new Date();
@@ -241,7 +241,7 @@ const PharmaSupplyChain = {
             }, 7000); 
         },
         async loadWeb3() {
-            this.web3 = new Web3('http://localhost:8545');
+            this.web3 = new Web3(host);
         },
         async loadContract() {
             this.contract = new this.web3.eth.Contract(contractABI, contractAddress);

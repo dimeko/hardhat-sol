@@ -53,7 +53,7 @@ contract SupplyChain {
     error ShipmentNotUpdated(string errorMessage, uint shipment);
     error CannotTrackShipment(string errorMessage, uint productId);
     error NotFoundShipment(string errorMessage, uint productId);
-    // Modifiers
+
     modifier onlyAdmin() {
         require(users[msg.sender].role == Role.Administrator, "Not authorized");
         _;
@@ -61,21 +61,6 @@ contract SupplyChain {
 
     modifier onlySupplier() {
         require(users[msg.sender].role == Role.Supplier, "Not authorized");
-        _;
-    }
-
-    modifier onlyLogisticEmployee() {
-        require(users[msg.sender].role == Role.LogisticEmployee, "Not authorized");
-        _;
-    }
-
-    modifier onlyController() {
-        require(users[msg.sender].role == Role.Controller, "Not authorized");
-        _;
-    }
-
-    modifier onlyAuthorized(Role role) {
-        require(users[msg.sender].role == role, "Not authorized");
         _;
     }
 
@@ -235,7 +220,7 @@ contract SupplyChain {
     }
 
 
-    function _isSenderShipmentParticipant(Shipment memory shipment, EntityType entityType ) private view returns (bool) {
+    function _isShipmentParticipant(Shipment memory shipment, EntityType entityType ) private view returns (bool) {
         return users[shipment.destination].entityType <= entityType || msg.sender == shipment.origin || msg.sender == shipment.destination;
     } 
 
@@ -243,7 +228,7 @@ contract SupplyChain {
         uint count = 0;
         for (uint i = 1; i <= shipmentCount; i++) {
             if (shipments[i].productId == productId ){
-                if(_isSenderShipmentParticipant(shipments[i], entityType)) {
+                if(_isShipmentParticipant(shipments[i], entityType)) {
                     count++;
                 } else {
                     revert CannotTrackShipment("No permission to view the current shipment history", productId);
@@ -259,7 +244,7 @@ contract SupplyChain {
         uint index = 0;
         for (uint i = 1; i <= shipmentCount; i++) {
             if (shipments[i].productId == productId ){
-                if(_isSenderShipmentParticipant(shipments[i], entityType)) {
+                if(_isShipmentParticipant(shipments[i], entityType)) {
                     productShipments[index] = shipments[i];
                     index++;
                 } else {

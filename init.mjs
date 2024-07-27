@@ -1,6 +1,6 @@
 import Web3 from "web3";
-import { contractABI, contractAddress } from "./client/config.mjs";
-const web3 = new Web3('http://localhost:8545');
+import { host, contractABI, contractAddress } from "./client/config.mjs";
+const web3 = new Web3(host);
 const contract = new web3.eth.Contract(contractABI, contractAddress);
 let accounts = []
 let adminAccount = null;
