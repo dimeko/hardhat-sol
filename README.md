@@ -33,7 +33,7 @@ Terminal 3
 ```shell
 # Then run a python server to test your contract dAPP UI
 cd client
-python3 -m http.server
+python3 -m http.server 8000
 ```
 Now you can visit the contract UI on the given port of your localhost. You will see the already initialized users.
 
