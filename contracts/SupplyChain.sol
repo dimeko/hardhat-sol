@@ -2,8 +2,8 @@
 pragma solidity ^0.8.0;
 
 contract SupplyChain {
-    enum Role { Administrator, Supplier, LogisticEmployee, Controller }
-    enum EntityType { None, Supplier, Transfer, LogisticEmployee, Distributor, Storage }
+    enum Role { Administrator, Supplier, LogisticsEmployee, Controller }
+    enum EntityType { None, Supplier, Transfer, Constructor, LogisticsStorage, Distributor, Storage }
 
     struct Product {
         uint id;
@@ -92,11 +92,11 @@ contract SupplyChain {
         }
 
         if(newUser.role == Role.Administrator) {
-            revert UserNotAdded("Addin admin user is permitted", user);
+            revert UserNotAdded("Adding admin user is permitted", user);
         }
 
-        if( (newUser.role == Role.Supplier && (newUser.entityType != EntityType.Supplier && newUser.entityType != EntityType.Transfer)) ||
-            (newUser.role == Role.LogisticEmployee && (newUser.entityType != EntityType.LogisticEmployee && newUser.entityType != EntityType.Distributor)) ||
+        if( (newUser.role == Role.Supplier && (newUser.entityType != EntityType.Supplier && newUser.entityType != EntityType.Transfer && newUser.entityType != EntityType.Constructor)) ||
+            (newUser.role == Role.LogisticsEmployee && (newUser.entityType != EntityType.LogisticsStorage && newUser.entityType != EntityType.Distributor)) ||
             (newUser.role == Role.Controller && newUser.entityType != EntityType.Storage)) 
         {
             revert UserNotAdded("Cannot create user with such combination of entity type and role. ", user);
@@ -190,7 +190,7 @@ contract SupplyChain {
     }
 
     function updateShipment(uint shipmentId, string memory status) public  {
-        if(msg.sender != shipments[shipmentId].origin) {
+        if(msg.sender != shipments[shipmentId].origin && msg.sender != shipments[shipmentId].destination) { 
             revert ShipmentNotUpdated("You must be the sender of the shipment.", shipmentId);
         }
         shipments[shipmentId].status = status;
@@ -206,10 +206,10 @@ contract SupplyChain {
 
     function trackProduct(uint productId) public view returns (Shipment[] memory) {
         if(users[msg.sender].role == Role.Supplier) {
-            Shipment[] memory productShipments = _productShipments(productId, EntityType.Transfer);
+            Shipment[] memory productShipments = _productShipments(productId, EntityType.Constructor);
             return productShipments;
-        } else if(users[msg.sender].role == Role.LogisticEmployee) {
-            Shipment[] memory productShipments = _productShipments(productId, EntityType.LogisticEmployee);
+        } else if(users[msg.sender].role == Role.LogisticsEmployee) {
+            Shipment[] memory productShipments = _productShipments(productId, EntityType.LogisticsStorage);
             return productShipments;
         } else if(users[msg.sender].role == Role.Controller) {
             Shipment[] memory productShipments = _productShipments(productId, EntityType.Storage);

@@ -8,9 +8,10 @@ let adminAccount = null;
 const newUsersToCreate = [
     {role: 1, entityType: 1},
     {role: 1, entityType: 2},
-    {role: 2, entityType: 3},
+    {role: 1, entityType: 3},
     {role: 2, entityType: 4},
-    {role: 3, entityType: 5}
+    {role: 2, entityType: 5},
+    {role: 3, entityType: 6}
 ]
 
 const findAdmin = async () => {
@@ -57,7 +58,7 @@ const createUsers = async () => {
             newUsersToCreate[i].role
         )
         c = c + 1;
-        if(c >= 5) {
+        if(c >= newUsersToCreate.length) {
             break
         }
     }

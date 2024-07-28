@@ -169,14 +169,15 @@ const PharmaSupplyChain = {
                     0: 'None',
                     1: 'Supplier',
                     2: 'Transfer',
-                    3: 'LogisticEmployee',
-                    4: 'Distributor',
-                    5: 'Storage'
+                    3: 'Constructor',
+                    4: 'LogisticsStorage',
+                    5: 'Distributor',
+                    6: 'Storage'
                 },
                 roles: {
                     0: 'Administrator',
                     1: 'Supplier',
-                    2: 'LogisticEmployee',
+                    2: 'LogisticsEmployee',
                     3: 'Controller'
                 },
                 accounts: [],
